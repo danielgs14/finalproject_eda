@@ -1,0 +1,13 @@
+Q1. Where are the data from?
+A1. Data comes from underwater censuses done in two different sites in the Pacific coast of Costa Rica during a college course in 2016. Three teams of three members each worked on counting and measuring invertebrates and fish in a 50 m long transect, observing 1 m per side of the transect (for an area of 100 m2). Two or three replicates were done in each site. 
+
+Q2. What are the data?
+A2. 1504 occurences of epibenthic fauna and fish in these two sites. Organisms 	were counted and their total length was taken in field. Taxonomic identification was performed visually and classified down to lowest rank possible. Even though I won't change species names, I don't agree with this kind of identification method for many invertebrates. 
+
+Q3. Are there any constraints on using this data?
+A3. Data can be used for the Ecological Data Analysis in R course during I semester, 2020.
+
+Q4. Research questions.
+A4. One site has an intense fisshing pressure while the other does not. 
+Will there be any difference in community structure between these two sites? Will the site with more fishing pressure have an effect on predator abundance? 
+Will grazers have bigger size (length? abundance? biomass? not sure) in the site with more fishing pressure?  
