@@ -33,6 +33,13 @@ Here, steps for tidying the dataset will be presented. Raw data was taken during
 
 ```{r}
 df <- read.csv("./data/df_daniel.csv")
+
+df1 <- summarise(df, Provincia) 
+
+  
+ab_matrix <- pivot_wider(df1, names_from = c("Especie", "EspecieCodigo"), values_from = "Abundancia")
+
+
 head(df)
 tail(df)
 str(df)
