@@ -24,7 +24,6 @@ This is the second assingment for the Ecological Data Analysis in R course. In o
 library(tidyverse)
 library(dplyr)
 library(vegan)
-library(viridis) #just in case For ggplot, use scale_color_viridis() and scale_fill_viridis() magma, plasma, inferno, viridis
 source("./functions/6003Functions.R")
 ```
 
@@ -33,32 +32,39 @@ source("./functions/6003Functions.R")
 Here, steps for tidying the dataset will be presented. Raw data was taken during completion of underwater transects, then input in Excel. Data will be imported as a .csv file.  
 
 ```{r}
-#df <- read.csv("./data/df_daniel.csv")
-df <- read.csv("./data/df_rev_transects.csv")
-
-
 df <- read.csv("./data/df_daniel.csv")
 
-#df contains data for analysis
+#df1 <- summarise(df, Provincia) 
+#ab_matrix <- pivot_wider(df1, names_from = c("Especie", "EspecieCodigo"), values_from = "Abundancia")
+
+# Create spp abundance matrix
+# this matrix only needs three data: spp names, abundance values and site/location/province to allocate specific area sampled
+# therefore we will first select these variables
+temp_data <- df %>% select(Provincia, Localidad, SitioCodigo, Especie, Abundancia)
+head(temp_data)
+str(temp_data)
+
+# let´s now summarise our spp regardless of their size (variable which we ignored in the previous step)
+temp_data <- summarise(group_by(temp_data, Provincia, Localidad, SitioCodigo, Especie),
+                        sum_abundancia = sum(Abundancia, na.rm = TRUE))
+
+# let´s now make the abundance matrix, we indicate variable names and abundance values
+# rest of variables will be "ignored" but maintained
+ab_matrix <- pivot_wider(temp_data, names_from = Especie, values_from = sum_abundancia)
+
+# The lines of code above work fine, my only observation like I mentioned during our meeting is
+# that you only have seven data points, so for a linear model may be too few
+# but if it is too hard and time consuming to go back to a longer dataset version, 
+# you can run the excercise like this for your final project =)
+# let me know if you have any other questions
+
+# I did not revise any of the following lines of code
 head(df)
 tail(df)
 str(df)
 range(df$Talla_.cm.)
 range(df$Abundancia)
 range(df$Densidad_.org.m2.)
-
-# ab_matrix contains abundance matrix for ecological indices
-# we'll create it out of df; as we don't care for sizes, we'll sum all abundances for each species on each site
-
-df_temp <- df %>% select(Provincia, Localidad, SitioCodigo, Especie, Abundancia)
-head(df_temp)
-str(df_temp)
-df_temp <- summarise(group_by(df_temp, Provincia, Localidad, SitioCodigo, Especie),
-                        sum_abundancia = sum(Abundancia, na.rm = TRUE))
-view(df_temp)
-
-
-
 ```
 
 Everything looks good. Data was already in long format before importing it. 
