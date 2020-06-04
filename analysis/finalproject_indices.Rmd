@@ -1,0 +1,182 @@
+---
+title: "Final project"
+author: "Daniel Gonzalez-Suarez"
+date: "4/3/2020"
+output: 
+  pdf_document: 
+    toc: yes
+  html_document: 
+    theme: united
+    toc: yes
+editor options:
+  chunk_output_style: console
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Part II, Final Assignment
+This is the second assingment for the Ecological Data Analysis in R course. In order to start, packages and functions will be loaded first.
+```{r, include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(vegan)
+library(viridis) #just in case For ggplot, use scale_color_viridis() and scale_fill_viridis() magma, plasma, inferno, viridis
+source("./functions/6003Functions.R")
+```
+
+## Loading data and tidying it up.
+
+Here, steps for tidying the dataset will be presented. Raw data was taken during completion of underwater transects, then input in Excel. Data will be imported as a .csv file.  
+
+```{r}
+#df <- read.csv("./data/df_daniel.csv")
+df <- read.csv("./data/df_rev_transects.csv")
+
+
+df <- read.csv("./data/df_daniel.csv")
+
+#df contains data for analysis
+head(df)
+tail(df)
+str(df)
+range(df$Talla_.cm.)
+range(df$Abundancia)
+range(df$Densidad_.org.m2.)
+
+# ab_matrix contains abundance matrix for ecological indices
+# we'll create it out of df; as we don't care for sizes, we'll sum all abundances for each species on each site
+
+df_temp <- df %>% select(Provincia, Localidad, SitioCodigo, Especie, Abundancia)
+head(df_temp)
+str(df_temp)
+df_temp <- summarise(group_by(df_temp, Provincia, Localidad, SitioCodigo, Especie),
+                        sum_abundancia = sum(Abundancia, na.rm = TRUE))
+view(df_temp)
+
+
+
+```
+
+Everything looks good. Data was already in long format before importing it. 
+
+
+## Exploring the data
+We are going to see visual representation of data.
+
+# 1. Outliers 
+
+```{r}
+boxplot(df$Talla_.cm.)
+boxplot(df$Abundancia)
+boxplot(df$Densidad_.org.m2.)
+
+dotchart(df$Talla_.cm.)
+dotchart(df$Abundancia)
+dotchart(df$Densidad_.org.m2.)
+```
+
+Many outliers, but there are no errors on data.
+
+# 2. Homogeneity of variance 
+
+```{r}
+p <- ggplot(data=df, aes(X=Provincia, y=Talla_.cm.)) +
+  geom_boxplot() + facet_wrap(~SitioCodigo)
+p
+p<- ggplot(data=df, aes(X=SitioCodigo, y=Densidad_.org.m2.)) +
+  geom_boxplot() + facet_wrap(~Localidad)
+p
+```
+
+There is homogeneity of variance.
+
+# 3. Normality 
+
+```{r}
+
+hist(df$Talla_.cm.)
+hist(df$Abundancia)
+hist(df$Densidad_.org.m2.)
+
+qqnorm(df$Talla_.cm.)
+qqline(df$Talla_.cm.)
+
+qqnorm(df$Abundancia)
+qqline(df$Abundancia)
+
+qqnorm(df$Densidad_.org.m2.)
+qqline(df$Densidad_.org.m2.)
+
+```
+
+Data is not normal, as seen in histograms and confirmed by Q-Q plots.
+
+# 4. Zeroes 
+
+```{r}
+range(df$Talla_.cm.)
+plot(table(df$Talla_.cm.))
+
+range(df$Abundancia)
+plot(df$Abundancia)
+
+range(df$Densidad_.org.m2.)
+plot(table(df$Densidad_.org.m2.))
+
+```
+
+There are no zeroes in either continuous variable.
+
+
+# 5. Collinearity X
+```{r}
+pairs(~ Provincia + Localidad + SitioCodigo + Densidad_.org.m2. + Talla_.cm., 
+      lower.panel=panel.smooth, upper.panel=panel.cor, 
+      data=df) 
+
+plot(Talla_.cm. ~ Provincia, data=df)
+plot(Talla_.cm. ~ Localidad, data=df)
+plot(Talla_.cm. ~ SitioCodigo, data=df)
+
+plot(Densidad_.org.m2. ~ Provincia, data=df)
+plot(Densidad_.org.m2. ~ Localidad, data=df)
+plot(Densidad_.org.m2. ~ SitioCodigo, data=df)
+
+pairs(~ Provincia + Densidad_.org.m2. + Talla_.cm., 
+      lower.panel=panel.smooth, upper.panel=panel.cor, 
+      data=df) 
+```
+
+Our X variable will now be only Province
+
+# 6. Relationships X and Y
+```{r}
+p <- ggplot(df, aes(x=Provincia, y=Talla_.cm.)) +
+  geom_boxplot()
+p
+
+p <- ggplot(df, aes(x=Provincia, y=Densidad_.org.m2.)) +
+  geom_boxplot()
+p
+```
+
+
+# 7. Interactions
+
+```{r}
+
+coplot(Talla_.cm. ~ Densidad_.org.m2. | Provincia ,
+       data=df,
+       panel=function(x,y,...) {
+         panel.smooth(x,y,span=0.8,iter=5,...)
+         abline(lm(y ~ x), col="blue") } )
+```
+There seems to be no interaction in Provinces. 
+
+# 8. Independence of Y
+Both length and density could be dependent on Province because of fishing pressure effects. 
+
